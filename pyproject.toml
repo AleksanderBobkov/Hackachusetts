@@ -1,0 +1,29 @@
+[project]
+name = "companion"
+version = "0.1.0"
+description = "Tabletop AI companion for older adults (backend)"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "websockets>=12",
+  "pydantic>=2.6",
+  "pyyaml>=6.0",
+]
+# Target host: Raspberry Pi 4B, 64-bit Raspberry Pi OS (Bookworm, system Python 3.11).
+# Every dependency ships aarch64 wheels on PyPI, so nothing compiles on the Pi.
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "httpx>=0.27"]
+speed = ["uvloop>=0.19", "httptools>=0.6"]  # optional; aarch64 wheels available
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["companion*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

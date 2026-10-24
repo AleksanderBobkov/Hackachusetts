@@ -130,6 +130,15 @@ REST: `GET /config`, `PUT /config/languages`, `GET /profiles/{id}/photos`,
 `POST /claims/{id}/dispute`, `POST /claims/{id}/withdraw`, `DELETE /profiles/{id}`,
 `POST /session/reset`. The `translation` event also carries `machine_translation: true`.
 
+Wire details (implemented in `companion/events.py`, shapes above unchanged): `turn_id` is an
+integer, increasing per START_TURN; `state` events always carry `speaker` and `turn_id` (`null`
+when no turn is active, e.g. `idle`/`muted`/`error`); `error.turn_id` may be `null` for
+command errors; extra error codes `invalid_command`, `not_implemented`, `internal`. The
+server sends the current `state` on connect. Pressing TALK for the listening speaker again
+ends the turn; another speaker's press interrupts (barge-in). Proposal `claims[]` items are
+provisional until Phase 3: `{claim_id, action, kind, text, attributed_to, locator{start,end},
+evidence, confidence, needs_review}`; `unknowns[]`: `{field, photo_id, evidence, locator}`.
+
 ## 7. Failure behavior
 
 | Failure | Behavior |

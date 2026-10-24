@@ -27,6 +27,7 @@ beyond a throwaway debug page.
 | Decision | Default |
 |---|---|
 | Runtime | Python 3.11, FastAPI, uvicorn, asyncio, pydantic, sqlite3, pytest |
+| Host | **Raspberry Pi 4B**, 64-bit Raspberry Pi OS (Bookworm; system Python 3.11). Only deps with aarch64 wheels; no local ML models/torch on the Pi — STT/TTS/LLM via hosted providers; laptop is the dev/fallback host |
 | Providers | Adapter interfaces with a **mock** implementation (deterministic, offline) + one real implementation selected by env `PROVIDER=openai\|aws\|mock`. Implement OpenAI (STT whisper/gpt-4o-transcribe, TTS, chat/translation) first unless told otherwise; AWS (Transcribe/Translate/Polly) second. |
 | Language pair | Configurable; seed with `pl` (resident) ↔ `en` (visitor) |
 | Controls | Keyboard in dev: `1`=TALK speaker A, `2`=TALK speaker B, `space`=TALK resident/contributor, `m`=STOP_ALL, `+/-` volume. Hardware (USB HID) maps to the same commands. |
@@ -55,13 +56,13 @@ docs/test-log.md       # measured results (Phase 5)
 ---
 
 ## Phase 0 — Skeleton & UI contract (do first)
-- [ ] Layout above, `pyproject.toml`, `README` run instructions (`uvicorn companion.api.app:app`)
-- [ ] `events.py`: every event/command in architecture §6 as pydantic models
-- [ ] `/ws` endpoint + `?mock=1` mode that streams a scripted demo (state → transcript →
+- [x] Layout above, `pyproject.toml`, `README` run instructions (`uvicorn companion.api.app:app`)
+- [x] `events.py`: every event/command in architecture §6 as pydantic models
+- [x] `/ws` endpoint + `?mock=1` mode that streams a scripted demo (state → transcript →
       translation → playback) so the UI builder can work immediately
-- [ ] Orchestrator state machine: `idle, listening, transcribing, translating, thinking,
+- [x] Orchestrator state machine: `idle, listening, transcribing, translating, thinking,
       speaking, muted, error`; monotonically increasing `turn_id`; cancellation tokens
-- [ ] Tests: STOP_ALL from every state returns to idle/muted; late results dropped
+- [x] Tests: STOP_ALL from every state returns to idle/muted; late results dropped
 
 **Gate:** UI connects and renders mock events; state-machine tests pass.
 

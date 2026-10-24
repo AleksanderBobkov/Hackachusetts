@@ -15,11 +15,13 @@ pytest
 
 ### Raspberry Pi 4B (target host)
 
-Use **64-bit** Raspberry Pi OS (Bookworm). It ships Python 3.11, and every dependency has a
-prebuilt aarch64 wheel. 32-bit armv7 has no PyPI wheels and is not supported.
+Target is **Raspberry Pi OS Lite 64-bit** (Bookworm, headless). It ships Python 3.11, and every
+dependency has a prebuilt aarch64 wheel. 32-bit armv7 has no PyPI wheels and is not supported.
+There's no desktop, so buttons and keys are read through `/dev/input` (evdev, Phase 1). The
+screen UI needs its own kiosk setup.
 
 ```bash
-sudo apt install -y python3-venv          # + libportaudio2 once audio lands (Phase 1)
+sudo apt install -y git python3-venv python3-pip   # + libportaudio2 once audio lands (Phase 1)
 python3 -m venv .venv && . .venv/bin/activate
 pip install -e .                          # optional: pip install -e ".[speed]"
 uvicorn companion.api.app:app --host 0.0.0.0 --port 8000

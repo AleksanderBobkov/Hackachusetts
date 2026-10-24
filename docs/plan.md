@@ -27,10 +27,10 @@ beyond a throwaway debug page.
 | Decision | Default |
 |---|---|
 | Runtime | Python 3.11, FastAPI, uvicorn, asyncio, pydantic, sqlite3, pytest |
-| Host | **Raspberry Pi 4B**, 64-bit Raspberry Pi OS (Bookworm; system Python 3.11). Only deps with aarch64 wheels; no local ML models/torch on the Pi — STT/TTS/LLM via hosted providers; laptop is the dev/fallback host |
+| Host | **Raspberry Pi 4B, Raspberry Pi OS Lite 64-bit** (Bookworm, headless, system Python 3.11). Only deps with aarch64 wheels; no local ML models/torch on the Pi — STT/TTS/LLM via hosted providers; laptop is the dev/fallback host. No desktop: backend runs as a systemd service; the screen UI needs its own kiosk setup (UI builder's call) |
 | Providers | Adapter interfaces with a **mock** implementation (deterministic, offline) + one real implementation selected by env `PROVIDER=openai\|aws\|mock`. Implement OpenAI (STT whisper/gpt-4o-transcribe, TTS, chat/translation) first unless told otherwise; AWS (Transcribe/Translate/Polly) second. |
 | Language pair | Configurable; seed with `pl` (resident) ↔ `en` (visitor) |
-| Controls | Keyboard in dev: `1`=TALK speaker A, `2`=TALK speaker B, `space`=TALK resident/contributor, `m`=STOP_ALL, `+/-` volume. Hardware (USB HID) maps to the same commands. |
+| Controls | On the Pi (no X/Wayland) read keys via `evdev` from `/dev/input` — same path for a USB keyboard and USB HID buttons; terminal stdin fallback on a laptop. Keys: `1`=TALK speaker A, `2`=TALK speaker B, `space`=TALK resident/contributor, `m`=STOP_ALL, `+/-` volume. Hardware (USB HID) maps to the same commands. |
 | Turn style | Tap to start, tap to finish (latched); max recording 60 s timeout |
 | Audio | 16 kHz mono; `sounddevice`; playback queue flushable instantly |
 

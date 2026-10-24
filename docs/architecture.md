@@ -130,6 +130,12 @@ REST: `GET /config`, `PUT /config/languages`, `GET /profiles/{id}/photos`,
 `POST /claims/{id}/dispute`, `POST /claims/{id}/withdraw`, `DELETE /profiles/{id}`,
 `POST /session/reset`. The `translation` event also carries `machine_translation: true`.
 
+Implemented for the screen UI (`companion/api/profiles.py`, a JSON + files store until the
+Phase 2 SQLite schema replaces it): `GET /profiles`, `GET /profiles/active`, `POST /profiles`,
+`PUT /profiles/{id}`, `POST /profiles/{id}/activate {mode}` (sends `set_mode`),
+`POST /profiles/{id}/photos`, `DELETE /profiles/{id}/photos/{photo_id}`, `GET /photos/{file}`.
+`GET /profiles` returns the photo lists, standing in for `GET /profiles/{id}/photos`.
+
 Wire details (implemented in `companion/events.py`, shapes above unchanged): `turn_id` is an
 integer, increasing per START_TURN; `state` events always carry `speaker` and `turn_id` (`null`
 when no turn is active, e.g. `idle`/`muted`/`error`); `error.turn_id` may be `null` for

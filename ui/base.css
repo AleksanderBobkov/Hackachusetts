@@ -1,0 +1,96 @@
+/* Shared components. Values come from /design/tokens.css only (design-system.md). */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+.icon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  flex: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--target-setup);
+  min-width: var(--target-setup);
+  padding: var(--space-3) var(--space-5);
+  font: var(--setup-action);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: var(--border-width) solid var(--border-control);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  text-align: center;
+  transition: background-color var(--duration) var(--easing);
+  touch-action: manipulation;
+}
+.btn:hover { background: var(--bg-subtle); }
+.btn:active { background: var(--bg-subtle); border-color: var(--action-pressed); }
+
+.btn-primary {
+  color: var(--text-on-action);
+  background: var(--action-primary);
+  border-color: var(--action-primary);
+}
+.btn-primary:hover { background: var(--action-hover); border-color: var(--action-hover); }
+.btn-primary:active { background: var(--action-pressed); border-color: var(--action-pressed); }
+
+/* Disabled never fades the whole control (no opacity); the reason is shown in words nearby. */
+.btn[aria-disabled="true"], .btn:disabled {
+  cursor: not-allowed;
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+  border-color: var(--border-control);
+}
+
+.btn-destructive { color: var(--error-text); }
+
+/* ---------------------------------------------------------------- messages */
+
+.message {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  border: var(--border-width) solid currentColor;
+}
+.message-error { color: var(--error-text); background: var(--error-surface); }
+.message-warning { color: var(--warning-text); background: var(--warning-surface); }
+.message-success { color: var(--text-primary); background: var(--bg-subtle); border-color: var(--action-primary); }
+.message .icon { margin-top: 2px; }
+
+/* ---------------------------------------------------------------- badge */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font: var(--setup-support);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+  border: var(--border-width) solid var(--action-primary);
+  border-radius: var(--radius-control);
+}

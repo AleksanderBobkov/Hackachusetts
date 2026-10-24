@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Companion setup</title>
+  <link rel="stylesheet" href="/design/tokens.css">
+  <link rel="stylesheet" href="/ui/base.css">
+  <link rel="stylesheet" href="/ui/setup.css">
+  <script type="module" src="/ui/setup.js"></script>
+</head>
+<body class="setup">
+  <main class="page">
+    <h1 class="page-title">Companion setup</h1>
+    <p class="lead">Choose a person, add their name and photos, then start the companion.</p>
+
+    <div class="message message-error" id="load-error" role="alert" hidden>
+      <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#offline"></use></svg>
+      <div>
+        <p id="load-error-text">Cannot connect right now. Try again.</p>
+        <button type="button" class="btn" id="load-retry">Try again</button>
+      </div>
+    </div>
+
+    <!-- 1. Person -->
+    <section class="group" aria-labelledby="people-title">
+      <h2 class="section-title" id="people-title">Person</h2>
+      <p class="support" id="people-empty" hidden>No one added yet. Add a person to begin.</p>
+      <fieldset class="person-list-wrap" id="person-fieldset" hidden>
+        <legend class="visually-hidden">Choose a person to set up</legend>
+        <ul class="person-list" id="person-list"></ul>
+      </fieldset>
+      <button type="button" class="btn" id="add-person">
+        <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#plus"></use></svg>
+        <span>Add person</span>
+      </button>
+    </section>
+
+    <!-- 2. Name -->
+    <section class="group" id="name-group" aria-labelledby="name-title" hidden>
+      <h2 class="section-title" id="name-title">Name</h2>
+      <form id="name-form" novalidate>
+        <label class="field-label" for="name-input">Name</label>
+        <input class="field" id="name-input" name="display_name" type="text" autocomplete="off"
+               spellcheck="false" aria-describedby="name-error" maxlength="200">
+        <p class="field-error" id="name-error" hidden>
+          <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#alert"></use></svg>
+          <span id="name-error-text">Enter a name to continue</span>
+        </p>
+        <div class="row">
+          <button type="submit" class="btn" id="name-submit">Save changes</button>
+          <p class="inline-status" id="name-status" role="status"></p>
+        </div>
+      </form>
+    </section>
+
+    <!-- 3. Photos -->
+    <section class="group" id="photo-group" aria-labelledby="photos-title" hidden>
+      <h2 class="section-title" id="photos-title">Photos</h2>
+      <p class="support" id="photos-empty">No photos yet. Add photos when you're ready.</p>
+      <ul class="photo-list" id="photo-list"></ul>
+      <input type="file" id="photo-input" accept="image/jpeg,image/png,image/webp" multiple hidden>
+      <button type="button" class="btn" id="add-photos">
+        <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#photo"></use></svg>
+        <span>Add photos</span>
+      </button>
+      <p class="support" id="drop-hint">You can also drop photos onto this section.</p>
+    </section>
+
+    <!-- 4. Start -->
+    <section class="group" id="start-group" aria-labelledby="start-title" hidden>
+      <h2 class="section-title" id="start-title">Companion screen</h2>
+      <fieldset class="mode-choice">
+        <legend class="field-label">What should the companion do?</legend>
+        <label class="choice">
+          <input type="radio" name="mode" value="companion" checked>
+          <span><strong>Conversation</strong><span class="support-inline">Talk with the companion about the photos.</span></span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="mode" value="translate">
+          <span><strong>Translation</strong><span class="support-inline" id="translate-pair">Two people talk; each is translated for the other.</span></span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="mode" value="contribute">
+          <span><strong>Family story</strong><span class="support-inline">A family member tells a story. It is reviewed before it is used.</span></span>
+        </label>
+      </fieldset>
+      <div class="row">
+        <button type="button" class="btn btn-primary" id="start-btn">Start companion</button>
+      </div>
+      <div id="start-status" role="status"></div>
+      <p class="support" id="start-note">Starting stops anything the companion is doing right now.</p>
+    </section>
+  </main>
+
+  <!-- Real decisions only. Native <dialog>: focus trap + Escape; focus is restored on close. -->
+  <dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+    <h2 class="section-title" id="confirm-title"></h2>
+    <p id="confirm-body"></p>
+    <div class="row dialog-actions" id="confirm-actions"></div>
+  </dialog>
+</body>
+</html>

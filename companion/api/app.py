@@ -12,11 +12,17 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Any
 
+from pathlib import Path
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import ValidationError
 
 from companion.api.hub import Hub
 from companion.api.mock_script import iter_script
+from companion.api.profiles import ProfileStore
+from companion.api.profiles import router as profiles_router
 from companion.config import Settings, load_settings
 from companion.events import ErrorEvent, dump, parse_command
 from companion.orchestrator import Orchestrator
@@ -41,11 +47,35 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.settings = settings
     app.state.hub = hub
     app.state.orch = build_orchestrator(settings, hub)
+    app.state.store = ProfileStore(Path(settings.data_dir))
     yield
     await app.state.orch.stop_all()
 
 
 app = FastAPI(title="Companion backend", version="0.1.0", lifespan=lifespan)
+app.include_router(profiles_router)
+
+# ---------------------------------------------------------------------- UI (static, no build step)
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+UI_DIR = REPO_ROOT / "ui"
+DESIGN_DIR = REPO_ROOT / "design"
+_NO_CACHE = {"Cache-Control": "no-cache"}  # pick up UI edits on the next kiosk reload
+
+app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui")
+app.mount("/design", StaticFiles(directory=DESIGN_DIR), name="design")
+
+
+@app.get("/", include_in_schema=False)
+async def resident_screen() -> FileResponse:
+    """Resident companion screen (what the Pi kiosk opens)."""
+    return FileResponse(UI_DIR / "companion.html", headers=_NO_CACHE)
+
+
+@app.get("/setup", include_in_schema=False)
+async def setup_screen() -> FileResponse:
+    """Setup screen: person name + photos. Open from a laptop/phone on the same network."""
+    return FileResponse(UI_DIR / "setup.html", headers=_NO_CACHE)
 
 
 # ---------------------------------------------------------------------- REST

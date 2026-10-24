@@ -35,6 +35,7 @@ class Settings:
     max_record_s: float = 60.0
     provider_timeout_s: float = 15.0
     db_path: str = "data/runtime/companion.db"
+    data_dir: str = "data/runtime"  # people + photos for the setup/companion UI
 
     def public(self) -> dict[str, Any]:
         """Config safe to expose over REST (no secrets live here anyway)."""
@@ -58,4 +59,6 @@ def load_settings() -> Settings:
         s.max_record_s = float(os.environ["MAX_RECORD_S"])
     if "COMPANION_DB" in os.environ:
         s.db_path = os.environ["COMPANION_DB"]
+    if "COMPANION_DATA_DIR" in os.environ:
+        s.data_dir = os.environ["COMPANION_DATA_DIR"]
     return s

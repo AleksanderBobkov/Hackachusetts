@@ -1,0 +1,247 @@
+/* Resident companion screen. Landscape ~3:2 kiosk on a Pi 4B (laid out against the real
+   viewport, no fixed pixel canvas). Priority: identity + state → captions + action → photo.
+   Pi-friendly: no blur/backdrop filters, no shadows, only opacity/colour transitions. */
+
+body.resident {
+  font: var(--resident-body);
+  background: var(--bg-canvas);
+  overflow: hidden;            /* kiosk: the layout itself must fit; captions scroll inside */
+  overscroll-behavior: none;
+  user-select: none;
+}
+
+.screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "identity photo"
+    "status   photo"
+    "captions photo"
+    "controls controls";
+  gap: var(--space-4) var(--space-6);
+  height: 100vh;
+  height: 100dvh;
+  padding: var(--inset);
+}
+
+@media (min-width: 1200px) {
+  .screen { padding: var(--space-6); }
+}
+
+/* ---------------------------------------------------------------- identity */
+
+.identity { grid-area: identity; min-width: 0; }
+.person-name {
+  margin: 0;
+  font: var(--resident-feature);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;     /* long names wrap; never ellipsis */
+}
+.mode-line, .replay-note {
+  margin: var(--space-1) 0 0;
+  font: var(--resident-support);
+  color: var(--text-secondary);
+}
+.replay-note { color: var(--warning-text); }
+
+/* ---------------------------------------------------------------- status */
+
+.status {
+  grid-area: status;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--border-control);
+  background: var(--bg-surface);
+  min-width: 0;
+}
+.status-icon { width: calc(var(--icon-size) + var(--space-3)); height: calc(var(--icon-size) + var(--space-3)); color: var(--text-primary); margin-top: 2px; }
+.status-text { min-width: 0; }
+.status-title { margin: 0; font: var(--resident-action); color: var(--text-primary); }
+.status-hint { margin: var(--space-1) 0 0; font: var(--resident-support); color: var(--text-secondary); }
+
+/* State surfaces. Each also changes the words and the symbol. Lavender is never used here. */
+.screen[data-state="listening"] .status { background: var(--bg-subtle); border-color: var(--action-primary); border-width: calc(var(--border-width) * 3); }
+.screen[data-state="muted"] .status,
+.screen[data-state="disconnected"] .status { background: var(--warning-surface); border-color: var(--warning-text); }
+.screen[data-state="muted"] .status-title,
+.screen[data-state="disconnected"] .status-title,
+.screen[data-state="muted"] .status-icon,
+.screen[data-state="disconnected"] .status-icon { color: var(--warning-text); }
+.screen[data-state="error"] .status { background: var(--error-surface); border-color: var(--error-text); }
+.screen[data-state="error"] .status-title,
+.screen[data-state="error"] .status-icon { color: var(--error-text); }
+
+/* ---------------------------------------------------------------- captions */
+
+.captions {
+  grid-area: captions;
+  min-height: 0;
+  overflow-y: auto;            /* long text scrolls inside; never pushes controls off-screen */
+  overscroll-behavior: contain;
+  padding-right: var(--space-2);
+  user-select: text;
+}
+.captions p { margin: 0; max-width: 34ch; }   /* 32px text: keeps lines readable */
+.caption-empty p { color: var(--text-secondary); font: var(--resident-support); }
+.caption-label {
+  font: var(--resident-support);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.captions .caption-original {
+  font: var(--resident-support);
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 var(--space-4);
+}
+.captions .caption-main {
+  font: var(--resident-body);
+  color: var(--text-primary);
+  margin-top: var(--space-1);
+}
+.captions .caption-note {
+  font: var(--resident-support);
+  color: var(--text-secondary);
+  margin-top: var(--space-3);
+}
+.caption-turn, .proposal { transition: opacity var(--duration) var(--easing); }
+
+.proposal-title { margin: 0 0 var(--space-2); font: var(--resident-section); color: var(--text-primary); }
+.proposal-subtitle { margin: var(--space-4) 0 var(--space-2); font: var(--resident-action); color: var(--text-primary); }
+.proposal-list { margin: var(--space-3) 0 0; padding-left: 1.2em; }
+.proposal-list li { margin: 0 0 var(--space-3); font: var(--resident-support); max-width: 34ch; }
+.proposal-list .needs-review { display: block; color: var(--warning-text); font-weight: 600; }
+
+/* ---------------------------------------------------------------- photo */
+
+.photo {
+  grid-area: photo;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  min-width: 0;
+}
+.photo-frame {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  border-radius: var(--radius-media);
+  background: var(--bg-canvas);           /* letterbox on cream; never stretch or crop */
+  border: var(--border-width) solid var(--border-decorative);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity var(--duration) var(--easing);
+}
+.photo-frame img.is-loading { opacity: 0; }
+.photo-empty {
+  padding: var(--space-6);
+  font: var(--resident-support);
+  color: var(--text-secondary);
+  text-align: center;
+}
+.photo-controls { display: flex; gap: var(--target-resident-gap); flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------- controls */
+
+.controls {
+  grid-area: controls;
+  display: flex;
+  gap: var(--target-resident-gap);
+  align-items: stretch;
+}
+.talk-group { display: flex; gap: var(--target-resident-gap); flex: 1; min-width: 0; }
+
+.resident-btn {
+  min-height: var(--target-resident);
+  min-width: var(--target-resident);
+  padding: var(--space-3) var(--space-5);
+  font: var(--resident-action);
+  border-radius: var(--radius-control);
+}
+.resident-btn .icon { width: calc(var(--icon-size) + var(--space-2)); height: calc(var(--icon-size) + var(--space-2)); }
+
+.talk-btn { flex: 1; min-width: 0; min-height: calc(var(--target-resident) + var(--space-5)); justify-content: center; }
+.talk-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-width: 0; }
+.talk-who { font: var(--resident-support); overflow-wrap: anywhere; }
+.talk-who:empty { display: none; }
+
+/* Latched TALK for the listening speaker: explicit, not colour alone (label + aria-pressed). */
+.talk-btn[aria-pressed="true"] {
+  background: var(--action-pressed);
+  border-color: var(--text-primary);
+  border-width: calc(var(--border-width) * 3);
+}
+
+.mute-btn { flex: 0 0 auto; min-height: calc(var(--target-resident) + var(--space-5)); padding-inline: var(--space-6); }
+.mute-btn[aria-pressed="true"] {
+  color: var(--warning-text);
+  background: var(--warning-surface);
+  border-color: var(--warning-text);
+  border-width: calc(var(--border-width) * 3);
+}
+/* Stop/Mute feedback is immediate: no transition on press. */
+.mute-btn, .mute-btn:active { transition: none; }
+
+/* ---------------------------------------------------------------- short landscape (e.g. 800x480, 1024x600)
+   Type sizes stay at the resident scale; space is recovered from padding, the identity
+   block (spans both columns), and shorter visible photo-button labels. */
+
+@media (max-height: 640px) and (min-width: 761px) and (min-aspect-ratio: 1/1) {
+  .screen {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);   /* captions outrank the photo */
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "identity identity"
+      "status   photo"
+      "captions photo"
+      "controls controls";
+    gap: var(--space-3) var(--space-5);
+    padding: var(--space-4);
+  }
+  .identity { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-5); }
+  .mode-line { margin: 0; }
+  .replay-note { flex-basis: 100%; margin: 0; }
+  .status { padding: var(--space-3) var(--space-4); gap: var(--space-3); }
+  .photo { gap: var(--space-3); }
+  .photo-controls { flex-wrap: nowrap; }
+  .photo-controls .resident-btn { flex: 1 1 0; min-width: 0; padding-inline: var(--space-3); }
+  .label-extra { display: none; }
+  .talk-btn, .mute-btn { min-height: var(--target-resident); padding-block: var(--space-2); }
+}
+
+/* ---------------------------------------------------------------- narrow / portrait / zoom */
+
+@media (max-aspect-ratio: 1/1), (max-width: 760px) {
+  body.resident { overflow: auto; }
+  .screen {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
+    grid-template-areas: "identity" "status" "captions" "photo" "controls";
+  }
+  .captions { overflow: visible; }
+  .photo-frame { min-height: 40vh; }
+  .controls {
+    position: sticky;            /* MUTE stays reachable however long the captions get */
+    bottom: 0;
+    padding: var(--space-3) 0;
+    background: var(--bg-canvas);
+    flex-wrap: wrap;
+  }
+  .talk-group { flex-wrap: wrap; flex-basis: 100%; }
+  .talk-btn { flex-basis: 100%; }
+  .mute-btn { flex: 1 1 100%; }
+}

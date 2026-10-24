@@ -1,0 +1,98 @@
+/* Companion / Care design tokens (v0.6). Single source of truth: do not hard-code these values elsewhere. */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&family=Manrope:wght@600&display=swap");
+
+:root {
+  /* Color */
+  --bg-canvas: #F7F5EE;
+  --bg-surface: #FFFEF9;
+  --bg-subtle: #EEF2E8;
+  --bg-accent: #EFEBF5;
+  --text-primary: #243D3B;
+  --text-secondary: #526760;
+  --text-on-action: #FFFFFF;
+  --text-accent: #645478;
+  --action-primary: #376C5E;
+  --action-hover: #2F5F52;
+  --action-pressed: #264F44;
+  --border-control: #6D8376;
+  --border-decorative: #E6E6DA;
+  --focus-ring: #A65B25;
+  --warning-text: #775018;
+  --warning-surface: #F8EEDB;
+  --error-text: #9F3832;
+  --error-surface: #FAEAE7;
+
+  /* Font families */
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-setup-heading: "Manrope", "DM Sans", system-ui, sans-serif;
+
+  /* Type scale: setup (supporting) screen */
+  --setup-feature: 400 32px/1.25 var(--font-display);
+  --setup-section: 600 24px/1.30 var(--font-setup-heading);
+  --setup-body: 400 18px/1.55 var(--font-body);
+  --setup-action: 600 18px/1.25 var(--font-body);
+  --setup-support: 400 16px/1.50 var(--font-body);
+
+  /* Type scale: resident companion screen */
+  --resident-feature: 400 36px/1.25 var(--font-display);
+  --resident-section: 600 32px/1.30 var(--font-body);
+  --resident-body: 400 32px/1.40 var(--font-body);
+  --resident-action: 600 28px/1.25 var(--font-body);
+  --resident-support: 400 28px/1.40 var(--font-body);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --inset: 24px; /* up to 32px on larger viewports */
+
+  /* Shape */
+  --radius-control: 8px;
+  --radius-media: 12px;
+  --radius-card: 16px;
+  --border-width: 1px;
+
+  /* Focus */
+  --focus-width: 3px;
+  --focus-offset: 2px;
+
+  /* Targets */
+  --target-setup: 48px;
+  --target-resident: 64px;
+  --target-resident-gap: 16px;
+
+  /* Icons */
+  --icon-size: 24px;
+
+  /* Motion */
+  --duration: 150ms; /* 120-180ms range */
+  --easing: ease-out;
+}
+
+/* Base defaults */
+body {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font: var(--setup-body);
+}
+
+:focus-visible {
+  outline: var(--focus-width) solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 var(--focus-offset) var(--bg-canvas);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

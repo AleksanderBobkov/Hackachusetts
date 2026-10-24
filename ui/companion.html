@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Companion</title>
+  <link rel="stylesheet" href="/design/tokens.css">
+  <link rel="stylesheet" href="/ui/base.css">
+  <link rel="stylesheet" href="/ui/companion.css">
+  <script type="module" src="/ui/companion.js"></script>
+</head>
+<body class="resident">
+  <main class="screen" id="screen" data-state="connecting">
+
+    <header class="identity">
+      <h1 class="person-name" id="person-name">Companion</h1>
+      <p class="mode-line" id="mode-line"></p>
+      <p class="replay-note" id="replay-note" hidden>Demo replay. Not a live conversation.</p>
+    </header>
+
+    <!-- Status: fixed location in every state. Words + symbol, never color alone. -->
+    <section class="status" id="status" aria-labelledby="status-title">
+      <svg class="icon status-icon" aria-hidden="true"><use id="status-icon" href="/ui/icons.svg#ready"></use></svg>
+      <div class="status-text" role="status" aria-live="polite">
+        <p class="status-title" id="status-title">Connecting</p>
+        <p class="status-hint" id="status-hint">Starting up. One moment.</p>
+      </div>
+    </section>
+
+    <!-- Captions: latest exchange only, kept until the next interaction. -->
+    <section class="captions" id="captions" aria-label="Captions" tabindex="0">
+      <div class="caption-empty" id="caption-empty">
+        <p>Captions appear here.</p>
+      </div>
+      <div class="caption-turn" id="caption-turn" hidden>
+        <p class="caption-label" id="original-label"></p>
+        <p class="caption-original" id="original-text"></p>
+        <p class="caption-label" id="main-label" hidden></p>
+        <p class="caption-main" id="main-text" aria-live="polite"></p>
+        <p class="caption-note" id="main-note" hidden></p>
+      </div>
+      <div class="proposal" id="proposal" hidden>
+        <h2 class="proposal-title">Proposed for family review</h2>
+        <p class="caption-note">Not saved to the family notes yet. A family member reviews these first.</p>
+        <ul class="proposal-list" id="proposal-claims"></ul>
+        <div id="proposal-unknowns-wrap" hidden>
+          <h3 class="proposal-subtitle">Not known</h3>
+          <ul class="proposal-list" id="proposal-unknowns"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="photo" aria-label="Photos">
+      <figure class="photo-frame" id="photo-frame">
+        <img id="photo-img" alt="" decoding="async" hidden>
+        <figcaption class="photo-empty" id="photo-empty">No photos yet.</figcaption>
+      </figure>
+      <div class="photo-controls" id="photo-controls" hidden>
+        <!-- aria-label keeps the full name when short screens hide the second word. -->
+        <button type="button" class="btn resident-btn" id="photo-pause" aria-pressed="false" aria-label="Pause photos">
+          <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#pause"></use></svg>
+          <span>Pause<span class="label-extra"> photos</span></span>
+        </button>
+        <button type="button" class="btn resident-btn" id="photo-next" aria-label="Next photo">
+          <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#next"></use></svg>
+          <span>Next<span class="label-extra"> photo</span></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- TALK / MUTE: same commands as the hardware buttons. -->
+    <section class="controls" aria-label="Conversation controls">
+      <div class="talk-group" id="talk-group"></div>
+      <button type="button" class="btn resident-btn mute-btn" id="mute-btn" aria-pressed="false">
+        <svg class="icon" aria-hidden="true"><use id="mute-icon" href="/ui/icons.svg#mic-off"></use></svg>
+        <span>Mute</span>
+      </button>
+    </section>
+
+    <template id="talk-template">
+      <button type="button" class="btn btn-primary resident-btn talk-btn" aria-pressed="false">
+        <svg class="icon" aria-hidden="true"><use href="/ui/icons.svg#mic"></use></svg>
+        <span class="talk-text">
+          <span class="talk-label">Talk</span>
+          <span class="talk-who"></span>
+        </span>
+      </button>
+    </template>
+  </main>
+</body>
+</html>

@@ -125,8 +125,10 @@ UI → server commands (same socket; hardware buttons produce the same commands)
 ```
 
 REST: `GET /config`, `PUT /config/languages`, `GET /profiles/{id}/photos`,
-`GET /proposals`, `POST /proposals/{id}/review {decision, claim_ids, note}`,
-`POST /claims/{id}/withdraw`, `POST /session/reset`.
+`POST /contributions {profile_id, photo_id, contributor_id}` (starts contribute mode),
+`GET /proposals`, `POST /proposals/{id}/review {decision, claim_ids, note, actor_id}`,
+`POST /claims/{id}/dispute`, `POST /claims/{id}/withdraw`, `DELETE /profiles/{id}`,
+`POST /session/reset`. The `translation` event also carries `machine_translation: true`.
 
 ## 7. Failure behavior
 

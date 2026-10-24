@@ -147,6 +147,23 @@ Pipeline stages (each fails visibly):
 
 **Gate:** A → approve → companion answers → withdraw → gone; B and C behave as above.
 
+## Phase 3b — Curation quality & lifecycle details (part of Phase 3)
+- [ ] **Known-answer eval set** `tests/curation_cases.yaml` (≥10 synthetic cases, expected
+      claims/unknowns frozen *before* comparing models): explicit fact, hedged fact, unknown
+      year, transient-only, duplicate, augmentation, conflict, unclear name, injection,
+      no-durable-knowledge. Script `scripts/eval_curation.py` reports claim precision/recall,
+      locator accuracy, false promotions, duplicates created, transient rejection, valid-JSON
+      rate, latency, and token cost. Record model + prompt version for every run.
+- [ ] Every proposal/review row records model name, prompt version, actor_id, timestamp.
+- [ ] Writes use a version check (reject a review against a stale claim version).
+- [ ] `review_due` on preference/permission claims; `GET /claims?review_due=past` lists them
+      for reconfirmation (reminder only — never auto-renews consent).
+- [ ] Withdrawal/dispute also clears any cached context packets and in-flight turn context.
+- [ ] Claims stored in the contributor's language; translation cached in `claim_translations`
+      so Contribute works for a Polish-speaking contributor and Companion answers in Polish.
+- [ ] Offline: local photos and the "no connection" state still work; any replay/typed-input
+      fallback is labeled as such in the UI events (`fallback: true`).
+
 ## Phase 4 — Optional P1 (only after gates 1–3 pass)
 - [ ] "Save this as a family story?" from a translate-mode turn → Contribute pipeline with confirmation
 - [ ] Companion across languages using `claim_translations`
@@ -172,6 +189,21 @@ Write results to `docs/test-log.md` (build, host, network, provider, per-stage l
 | Prompt injection | no state change, no self-approval |
 | Failed write | no "saved" state, actionable error |
 | Network loss | readable error, no fabricated answer/translation |
+
+## Demo flow to support (judging, ~2 min)
+1. Translate: grandmother speaks Polish → transcript + English caption + English audio; grandchild replies.
+2. Contribute: synthetic story spoken → review card shows 2 claims with evidence, year left unknown, rejected inferences.
+3. Approve the claims (or a labeled walkthrough if not implemented).
+4. Companion: TALK "Who is in this photo?" → grounded answer; ask the year → "not in the family notes"; press MUTE during playback.
+5. Withdraw the claim → next answer no longer uses it. Show measured numbers from `docs/test-log.md`; label anything planned/replayed.
+
+## Team engineering knowledge (optional, not on the critical path)
+The HTML guide also recommends keeping the *team's* decisions/benchmarks/runbooks as
+source-cited Markdown using the knowledge-tools concept types (Architecture Decision,
+Evaluation Finding, Runbook, Standard, …). If time allows, add `docs/decisions/` and
+`docs/findings/` notes (with source and status `proposed|accepted`) for: tap-to-toggle,
+two-button translation, provider choice, measured latencies. Never put resident data there.
+Do not integrate the corporate knowledge-tools plugin into the product.
 
 ## Out of scope (do not build)
 Vector DB/embeddings, multi-household accounts/auth beyond config, always-on/proactive

@@ -117,6 +117,7 @@ class Orchestrator:
         mode: Mode = "translate",
         max_record_s: float = 60.0,
         on_session_reset: Callable[[], None] | None = None,
+        on_interrupt: Callable[[], object] | None = None,
     ) -> None:
         self._emit = emit
         self.pipelines: dict[str, Pipeline] = dict(pipelines or {})
@@ -128,6 +129,9 @@ class Orchestrator:
         self.photo_id: str | None = None
         self.max_record_s = max_record_s
         self.on_session_reset = on_session_reset
+        # Cancels work that runs outside this machine's turns (the screen's HTTP speech
+        # requests) on STOP_ALL, session reset and mode/person switch.
+        self.on_interrupt = on_interrupt
         self._turn_counter = 0
         self._current: TurnContext | None = None
         self._task: asyncio.Task[None] | None = None
@@ -175,6 +179,7 @@ class Orchestrator:
         """STOP_ALL / MUTE: always wins, from any state."""
         was_speaking = self.state == "speaking"
         old = self._invalidate()
+        self._interrupt()
         self.audio.flush_capture()
         self.audio.flush_playback()
         if old is not None and was_speaking:
@@ -185,6 +190,7 @@ class Orchestrator:
     async def reset_session(self) -> None:
         """POST /session/reset: stop everything and clear ephemeral session context."""
         self._invalidate()
+        self._interrupt()
         self.audio.flush_capture()
         self.audio.flush_playback()
         if self.on_session_reset:
@@ -193,6 +199,14 @@ class Orchestrator:
         await self._set_state("idle")
 
     # ------------------------------------------------------------------ internals
+
+    def _interrupt(self) -> None:
+        if self.on_interrupt is None:
+            return
+        try:
+            self.on_interrupt()
+        except Exception:  # never let a hook stop STOP_ALL from completing
+            log.exception("on_interrupt hook failed")
 
     def _invalidate(self) -> TurnContext | None:
         old, self._current = self._current, None
@@ -300,6 +314,7 @@ class Orchestrator:
 
     async def _set_mode(self, mode: Mode) -> None:
         self._invalidate()
+        self._interrupt()
         self.audio.flush_capture()
         self.audio.flush_playback()
         if self.on_session_reset:

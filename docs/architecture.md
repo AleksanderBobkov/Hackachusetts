@@ -1,11 +1,12 @@
 # Architecture — AI Companion for Elderly Care
 
 Status: **proposed** (v0.1, Oct 24 2026). The UI is built separately and connects through the
-API contract in §6. Everything here is backend.
+API contract in §6. Everything here is backend. The Companion / Care screen (`care/`) is served
+by the backend and uses §6's speech adapter, controls relay and media store.
 
 ## 1. What the device does
 
-One tabletop device, physical controls, a screen, a mic and a speaker. Three modes share the
+One tabletop device, a touchscreen, a mic and a speaker. Three modes share the
 same control layer and turn engine:
 
 | Mode | Who talks | What happens on END_TURN | Uses memory? |
@@ -135,6 +136,49 @@ Phase 2 SQLite schema replaces it): `GET /profiles`, `GET /profiles/active`, `PO
 `PUT /profiles/{id}`, `POST /profiles/{id}/activate {mode}` (sends `set_mode`),
 `POST /profiles/{id}/photos`, `DELETE /profiles/{id}/photos/{photo_id}`, `GET /photos/{file}`.
 `GET /profiles` returns the photo lists, standing in for `GET /profiles/{id}/photos`.
+
+**Speech adapter** (`companion/api/speech.py`, for screens that record in the browser, such as
+Companion / Care in `care/`). Each turn is two stages so a wrong listener can be corrected
+without recording again. Every response echoes `turn_id` + `person_id`; the screen drops
+anything else. Errors are `{error, turn_id, person_id, transcript?}` with an HTTP status, and keep
+the original words whenever they exist.
+
+```
+GET  /api/capabilities → {speech, translation, auto_detect, tts, output_languages{code: name},
+                          provider, simulated, remote, machine_translation}
+POST /api/turn  multipart: metadata (JSON) + audio | text
+     detect:    {turn_id, person_id, stage:"detect", source_language:"auto", ...}
+              → {turn_id, person_id, transcript, detected_language, detection_certain, simulated}
+     translate: {..., stage:"translate", recipient:"resident"|"visitor", target_language}
+              → {turn_id, person_id, target_language, transcript, translation, pronunciation,
+                 machine_translation:true, simulated}
+POST /api/speak {text, language} → audio (mp3; wav for mock)
+```
+
+`detection_certain` is a rule in code (`companion/speech/language.py`): exactly one reliably
+detected language and enough words to route on; otherwise the screen asks who should hear it.
+Provider calls are registered in `SpeechService`; STOP_ALL, session reset and mode/person switch
+cancel them (orchestrator `on_interrupt`), as does the browser aborting the request. Audio is
+held in memory for one request and never written to disk.
+
+**Shared UI state.** The production kiosk is touch-only. Its Start/Finish/Pause and replay
+buttons drive `SpeechSession` and the HTTP speech adapter directly. The backend publishes
+`{type:"session", reason:"reset"|"profile"|"mode"}` when another screen invalidates that session.
+Care cancels local recording, playback and requests immediately. Profile activation changes
+the kiosk's selected person; `{type:"library"}` refreshes people/media after edits. On WebSocket
+loss Care stops capture/playback, then re-reads the active profile and capabilities on reconnect
+without automatically recording again. Initial load restores the backend's active person.
+
+**Development controls relay.** `POST /controls {key | action, speaker?, value?}` remains
+available for optional external controls and dev keys. Keys go through `KeyMapper`. STOP_ALL also runs the
+orchestrator's `stop_all`. Every press is published on `/ws` as
+`{type:"control", action:"WAKE"|"START_TURN"|"END_TURN"|"STOP_ALL"|"SET_VOLUME", speaker:"resident"|"visitor"|null, value:0-1|null}`,
+and a WS `stop_all` from any screen is relayed the same way. Writes and WebSocket handshakes
+with a foreign `Origin` are rejected (`companion/api/security.py`).
+
+**Media.** Profiles also hold short videos (MP4/WebM) for the slideshow. Profile responses list
+`media[]` (`{photo_id, url, name, type:"image"|"video", bytes}`) and keep `photos[]` images-only.
+`POST /profiles` accepts `example: true` for the fictional people the screen seeds on first run.
 
 Wire details (implemented in `companion/events.py`, shapes above unchanged): `turn_id` is an
 integer, increasing per START_TURN; `state` events always carry `speaker` and `turn_id` (`null`

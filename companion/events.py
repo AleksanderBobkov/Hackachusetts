@@ -83,6 +83,34 @@ class PhotoEvent(_Model):
     url: str
 
 
+ControlAction = Literal["WAKE", "START_TURN", "END_TURN", "STOP_ALL", "SET_VOLUME"]
+
+
+class ControlEvent(_Model):
+    """A physical control press relayed to screens that record in the browser.
+
+    The Companion / Care screen dispatches it as its ``companion:control`` DOM event, the
+    same path as its on-screen buttons. Debouncing already happened (``KeyMapper``).
+    ``speaker`` is who pressed TALK; ``value`` is the volume, 0–1.
+    """
+
+    type: Literal["control"] = "control"
+    action: ControlAction
+    speaker: Literal["resident", "visitor"] | None = None
+    value: float | None = Field(default=None, ge=0, le=1)
+
+
+class SessionEvent(_Model):
+    """Invalidate browser-owned capture/playback when the shared session changes."""
+
+    type: Literal["session"] = "session"
+    reason: Literal["reset", "profile", "mode"]
+
+
+class LibraryEvent(_Model):
+    type: Literal["library"] = "library"
+
+
 Event = Annotated[
     Union[
         StateEvent,
@@ -93,6 +121,9 @@ Event = Annotated[
         ProposalEvent,
         ErrorEvent,
         PhotoEvent,
+        ControlEvent,
+        SessionEvent,
+        LibraryEvent,
     ],
     Field(discriminator="type"),
 ]

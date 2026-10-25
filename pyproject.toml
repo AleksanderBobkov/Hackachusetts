@@ -9,6 +9,7 @@ dependencies = [
   "websockets>=12",
   "pydantic>=2.6",
   "pyyaml>=6.0",
+  "python-multipart==0.0.32",  # /api/turn: the screen uploads each recording as multipart
 ]
 # Target host: Raspberry Pi 4B, 64-bit Raspberry Pi OS (Bookworm, system Python 3.11).
 # Every dependency ships aarch64 wheels on PyPI, so nothing compiles on the Pi.
@@ -16,6 +17,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio>=0.23", "httpx>=0.27"]
 speed = ["uvloop>=0.19", "httptools>=0.6"]  # optional; aarch64 wheels available
+openai = ["openai==3.37.0"]  # PROVIDER=openai (transcription, translation, voice)
 
 [build-system]
 requires = ["setuptools>=68"]

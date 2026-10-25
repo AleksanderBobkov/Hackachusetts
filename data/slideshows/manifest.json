@@ -1,0 +1,103 @@
+{
+  "version": "hackathon-families-2026-10-24-v1",
+  "profiles": [
+    {
+      "display_name": "María Elena",
+      "source_folder": "Family #1",
+      "photos": [
+        {
+          "file": "family-1/01.jpg",
+          "name": "Family #1 · Photo 1"
+        },
+        {
+          "file": "family-1/02.jpg",
+          "name": "Family #1 · Photo 2"
+        },
+        {
+          "file": "family-1/03.jpg",
+          "name": "Family #1 · Photo 3"
+        },
+        {
+          "file": "family-1/04.jpg",
+          "name": "Family #1 · Photo 4"
+        },
+        {
+          "file": "family-1/05.jpg",
+          "name": "Family #1 · Photo 5"
+        },
+        {
+          "file": "family-1/06.jpg",
+          "name": "Family #1 · Photo 6"
+        },
+        {
+          "file": "family-1/07.jpg",
+          "name": "Family #1 · Photo 7"
+        },
+        {
+          "file": "family-1/08.jpg",
+          "name": "Family #1 · Photo 8"
+        }
+      ]
+    },
+    {
+      "display_name": "James",
+      "source_folder": "Family #2",
+      "photos": [
+        {
+          "file": "family-2/01.jpg",
+          "name": "Family #2 · Photo 1"
+        },
+        {
+          "file": "family-2/02.jpg",
+          "name": "Family #2 · Photo 2"
+        },
+        {
+          "file": "family-2/03.jpg",
+          "name": "Family #2 · Photo 3"
+        },
+        {
+          "file": "family-2/04.jpg",
+          "name": "Family #2 · Photo 4"
+        },
+        {
+          "file": "family-2/05.jpg",
+          "name": "Family #2 · Photo 5"
+        },
+        {
+          "file": "family-2/06.jpg",
+          "name": "Family #2 · Photo 6"
+        },
+        {
+          "file": "family-2/07.jpg",
+          "name": "Family #2 · Photo 7"
+        }
+      ]
+    },
+    {
+      "display_name": "Amina",
+      "source_folder": "Family #3",
+      "photos": [
+        {
+          "file": "family-3/01.jpg",
+          "name": "Family #3 · Photo 1"
+        },
+        {
+          "file": "family-3/02.jpg",
+          "name": "Family #3 · Photo 2"
+        },
+        {
+          "file": "family-3/03.jpg",
+          "name": "Family #3 · Photo 3"
+        },
+        {
+          "file": "family-3/04.jpg",
+          "name": "Family #3 · Photo 4"
+        },
+        {
+          "file": "family-3/05.jpg",
+          "name": "Family #3 · Photo 5"
+        }
+      ]
+    }
+  ]
+}

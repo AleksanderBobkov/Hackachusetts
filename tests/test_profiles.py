@@ -5,6 +5,10 @@ from companion.api.app import app
 
 JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 64
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+MP4 = b"\x00\x00\x00\x18ftypisom" + b"\x00" * 1024
+WEBM_VIDEO = b"\x1a\x45\xdf\xa3\x9f\x42\x86\x81\x01\x42\x82\x84webm" + b"\x00" * 1024
+HEIC = b"\x00\x00\x00\x18ftypheic" + b"\x00" * 64  # a still image in an MP4-like box
+M4A = b"\x00\x00\x00\x18ftypM4A " + b"\x00" * 64  # audio only
 
 
 @pytest.fixture()
@@ -15,7 +19,15 @@ def client(tmp_path, monkeypatch):
 
 
 def test_ui_pages_and_assets_are_served(client):
-    assert "Companion" in client.get("/").text
+    home = client.get("/")
+    assert "<title>Companion / Care</title>" in home.text
+    assert home.headers["cache-control"] == "no-cache"
+    for asset in ("app.js", "db.js", "speech.js", "routing.js", "bridge.js", "styles.css",
+                  "keyboard.js", "assets/DMSans-variable.ttf"):
+        response = client.get(f"/care/{asset}")
+        assert response.status_code == 200, asset
+        assert response.headers['cache-control'] == 'no-cache'
+    assert "<title>Companion</title>" in client.get("/classic").text  # §6 event screen
     assert "Companion setup" in client.get("/setup").text
     assert client.get("/ui/companion.js").status_code == 200
     assert client.get("/design/tokens.css").status_code == 200
@@ -89,3 +101,61 @@ def test_store_survives_restart(tmp_path, monkeypatch):
         c.post(f"/profiles/{pid}/activate", json={"mode": "translate"})
     with TestClient(app) as c:
         assert c.get("/profiles/active").json()["profile"]["display_name"] == "Evelyn"
+
+
+def test_videos_share_the_media_list_but_not_the_photos_list(client):
+    pid = client.post("/profiles", json={"display_name": "Evelyn"}).json()["profile_id"]
+    photo = client.post(f"/profiles/{pid}/photos?filename=beach.jpg", content=JPEG).json()
+    mp4 = client.post(f"/profiles/{pid}/photos?filename=wave.mp4", content=MP4)
+    webm = client.post(f"/profiles/{pid}/photos?filename=garden.webm", content=WEBM_VIDEO)
+    assert mp4.status_code == 201 and webm.status_code == 201
+    assert mp4.json()["type"] == "video" and mp4.json()["photo_id"].startswith("video-")
+    assert photo["type"] == "image" and photo["bytes"] == len(JPEG)
+    for still_or_audio in (HEIC, M4A):
+        assert client.post(f"/profiles/{pid}/photos", content=still_or_audio).status_code == 415
+
+    profile = client.get("/profiles").json()["profiles"][0]
+    assert [m["type"] for m in profile["media"]] == ["image", "video", "video"]
+    assert [p["photo_id"] for p in profile["photos"]] == [photo["photo_id"]]  # photo-only screens
+
+    served = client.get(mp4.json()["url"])
+    assert served.headers["content-type"] == "video/mp4" and served.content == MP4
+    ranged = client.get(mp4.json()["url"], headers={"Range": "bytes=0-15"})
+    assert ranged.status_code == 206 and ranged.content == MP4[:16]  # video seeking
+    assert client.get(webm.json()["url"]).headers["content-type"] == "video/webm"
+    assert client.delete(f"/profiles/{pid}/photos/{mp4.json()['photo_id']}").json() == {"ok": True}
+
+
+def test_example_people_and_created_order(client):
+    a = client.post("/profiles", json={"display_name": "María Elena", "example": True},
+                    headers={"Idempotency-Key": "example-person-0"}).json()
+    again = client.post("/profiles", json={"display_name": "María Elena", "example": True},
+                        headers={"Idempotency-Key": "example-person-0"}).json()
+    b = client.post("/profiles", json={"display_name": "Evelyn"}).json()
+    assert a["profile_id"] == again["profile_id"]  # two screens seeding at once: one person
+    assert a["example"] is True and b["example"] is False
+    listed = client.get("/profiles").json()["profiles"]
+    assert [p["profile_id"] for p in listed] == [a["profile_id"], b["profile_id"]]
+    assert listed[0]["created_at"] <= listed[1]["created_at"]
+
+
+def test_per_person_item_limit(client, monkeypatch):
+    import companion.api.profiles as profiles
+
+    monkeypatch.setattr(profiles, "MAX_ITEMS_PER_PERSON", 2)
+    pid = client.post("/profiles", json={"display_name": "Evelyn"}).json()["profile_id"]
+    for i in range(2):
+        assert client.post(f"/profiles/{pid}/photos", content=JPEG,
+                           headers={"Idempotency-Key": f"k{i}"}).status_code == 201
+    full = client.post(f"/profiles/{pid}/photos", content=PNG)
+    assert full.status_code == 409 and "Remove an item" in full.json()["detail"]
+    # A retry of an upload that already succeeded still answers with that photo.
+    assert client.post(f"/profiles/{pid}/photos", content=JPEG,
+                       headers={"Idempotency-Key": "k0"}).status_code == 201
+
+
+def test_glossary_is_the_person_s_name(client):
+    pid = client.post("/profiles", json={"display_name": "Évelyn Nowak"}).json()["profile_id"]
+    store = client.app.state.store
+    assert store.glossary(pid) == ["Évelyn Nowak"]
+    assert store.glossary("person-000000000000") == []

@@ -6,5 +6,12 @@ __pycache__/
 *.db
 *.sqlite
 .env
+api.txt
+node_modules/
 data/runtime/
 recordings/
+.review-venv/
+# Review and browser-test output (screenshots, results, recordings, runtime copies).
+# Only the written report is tracked.
+review/*
+!review/FIXES.md

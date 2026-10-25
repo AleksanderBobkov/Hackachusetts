@@ -9,8 +9,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=%i
-# The backend reads TALK/MUTE from /dev/input (evdev, Phase 1) and plays audio itself.
-SupplementaryGroups=input audio
+# The touch kiosk owns microphone capture and playback; this service handles HTTP/providers.
 WorkingDirectory=/home/%i/Hackachusetts
 # Provider keys live in this file (never in the UI). Optional; leave it out for PROVIDER=mock.
 EnvironmentFile=-/home/%i/Hackachusetts/.env

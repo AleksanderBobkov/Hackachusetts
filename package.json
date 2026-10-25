@@ -1,0 +1,10 @@
+{
+  "name": "companion-care-ui",
+  "private": true,
+  "type": "module",
+  "description": "Companion / Care screen (care/). No build step; Node is only used for these tests.",
+  "scripts": {
+    "test": "node --test \"tests/ui/*.test.js\"",
+    "check": "node --check care/app.js && node --check care/db.js && node --check care/speech.js && node --check care/routing.js && node --check care/bridge.js && node --check care/keyboard.js"
+  }
+}

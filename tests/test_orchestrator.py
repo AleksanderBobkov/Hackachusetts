@@ -241,3 +241,22 @@ async def test_max_recording_time_ends_turn():
     await orch.handle(StartTurn(speaker="a"))
     await asyncio.wait_for(p.reached.wait(), 1)
     assert orch.state == "transcribing"
+
+
+async def test_interrupt_hook_runs_on_stop_reset_and_mode_change():
+    calls = []
+    orch, _, _ = make(GatedPipeline(), on_interrupt=lambda: calls.append(1))
+    await orch.handle(StopAll())
+    await orch.reset_session()
+    await orch.handle(SetMode(mode="companion"))
+    assert len(calls) == 3
+
+
+async def test_failing_interrupt_hook_never_blocks_stop_all():
+    def boom():
+        raise RuntimeError("hook failed")
+
+    orch, rec, _ = make(GatedPipeline(), on_interrupt=boom)
+    await orch.handle(StartTurn(speaker="a"))
+    await orch.handle(StopAll())
+    assert orch.state == "muted" and rec.states()[-1] == "muted"

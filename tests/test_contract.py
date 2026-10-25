@@ -76,6 +76,9 @@ def test_ws_live_commands_drive_orchestrator():
         assert isinstance(ev["turn_id"], int)
         ws.send_json({"cmd": "stop_all"})
         assert ws.receive_json()["state"] == "muted"
+        # STOP_ALL from one screen is relayed to every screen (browser-recording UIs too).
+        assert ws.receive_json() == {"type": "control", "action": "STOP_ALL",
+                                     "speaker": None, "value": None}
         ws.send_text("not json")
         assert ws.receive_json()["code"] == "invalid_command"
         ws.send_json({"cmd": "start_turn", "speaker": "nobody"})

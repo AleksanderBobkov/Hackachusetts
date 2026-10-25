@@ -13,6 +13,7 @@ Conflicts=getty@tty1.service
 [Service]
 Type=simple
 User=%i
+SupplementaryGroups=audio video render
 # A real logind session on tty1 so cage can open the display (DRM) and input devices.
 PAMName=login
 TTYPath=/dev/tty1
@@ -26,7 +27,8 @@ UtmpIdentifier=tty1
 UtmpMode=user
 Environment=XDG_SESSION_TYPE=wayland
 # Wait until the backend answers so Chromium never shows its own error page.
-ExecStartPre=/bin/sh -c 'for i in $(seq 1 60); do curl -sf http://127.0.0.1:8000/health >/dev/null && exit 0; sleep 1; done; exit 0'
+ExecStartPre=/bin/sh /home/%i/Hackachusetts/deploy/pi/wait-for-backend.sh
+TimeoutStartSec=100
 ExecStart=/bin/sh /home/%i/Hackachusetts/deploy/pi/kiosk.sh
 Restart=always
 RestartSec=3
